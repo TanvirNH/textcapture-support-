@@ -1,40 +1,472 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>TextCapture Support</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 50px auto;
-            padding: 20px;
-            background: #f5f5f5;
-        }
-        h1 { color: #333; }
-        .support-box {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        a {
-            display: inline-block;
-            margin-top: 15px;
-            padding: 10px 20px;
-            background: #007AFF;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TextCapture Support</title>
+
+  <style>
+    :root {
+      --bg-primary: #f8f9fb;
+      --bg-secondary: #e8ecf1;
+      --glass-light: rgba(255, 255, 255, 0.85);
+      --glass-light-border: rgba(255, 255, 255, 0.35);
+      --text-primary: #0d1117;
+      --text-secondary: rgba(13, 17, 23, 0.75);
+      --text-tertiary: rgba(13, 17, 23, 0.55);
+      --accent-dark: #0d1117;
+      --accent-text: #ffffff;
+      --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.06);
+      --shadow-md: 0 12px 32px rgba(0, 0, 0, 0.1);
+      --shadow-lg: 0 20px 55px rgba(0, 0, 0, 0.15);
+      --radius: 20px;
+      --radius-sm: 12px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-primary: #0d1117;
+        --bg-secondary: #161b22;
+        --glass-light: rgba(30, 34, 46, 0.85);
+        --glass-light-border: rgba(255, 255, 255, 0.12);
+        --text-primary: #f0f6fc;
+        --text-secondary: rgba(240, 246, 252, 0.8);
+        --text-tertiary: rgba(240, 246, 252, 0.6);
+        --accent-dark: #f0f6fc;
+        --accent-text: #0d1117;
+        --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.3);
+        --shadow-md: 0 12px 32px rgba(0, 0, 0, 0.45);
+        --shadow-lg: 0 20px 55px rgba(0, 0, 0, 0.6);
+      }
+    }
+
+    html[data-theme="light"] {
+      --bg-primary: #f8f9fb;
+      --bg-secondary: #e8ecf1;
+      --glass-light: rgba(255, 255, 255, 0.85);
+      --glass-light-border: rgba(255, 255, 255, 0.35);
+      --text-primary: #0d1117;
+      --text-secondary: rgba(13, 17, 23, 0.75);
+      --text-tertiary: rgba(13, 17, 23, 0.55);
+      --accent-dark: #0d1117;
+      --accent-text: #ffffff;
+      --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.06);
+      --shadow-md: 0 12px 32px rgba(0, 0, 0, 0.1);
+      --shadow-lg: 0 20px 55px rgba(0, 0, 0, 0.15);
+    }
+
+    html[data-theme="dark"] {
+      --bg-primary: #0d1117;
+      --bg-secondary: #161b22;
+      --glass-light: rgba(30, 34, 46, 0.85);
+      --glass-light-border: rgba(255, 255, 255, 0.12);
+      --text-primary: #f0f6fc;
+      --text-secondary: rgba(240, 246, 252, 0.8);
+      --text-tertiary: rgba(240, 246, 252, 0.6);
+      --accent-dark: #f0f6fc;
+      --accent-text: #0d1117;
+      --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 12px 32px rgba(0, 0, 0, 0.45);
+      --shadow-lg: 0 20px 55px rgba(0, 0, 0, 0.6);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      height: 100%;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", sans-serif;
+      color: var(--text-primary);
+      background:
+        radial-gradient(
+          ellipse 1500px 800px at 50% 0%,
+          var(--bg-secondary),
+          transparent 65%
+        ),
+        linear-gradient(
+          to bottom,
+          var(--bg-primary),
+          var(--bg-primary)
+        );
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 32px 20px;
+      overflow-x: hidden;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 580px;
+      position: relative;
+    }
+
+    /* Header with theme toggle */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 28px;
+      padding: 0 4px;
+    }
+
+    .header-title {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-tertiary);
+    }
+
+    .theme-toggle {
+      appearance: none;
+      background: var(--glass-light);
+      border: 1px solid var(--glass-light-border);
+      color: var(--text-primary);
+      border-radius: 100px;
+      padding: 8px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: var(--shadow-sm);
+      text-transform: uppercase;
+    }
+
+    .theme-toggle:hover {
+      background: rgba(255, 255, 255, 0.65);
+      border-color: rgba(255, 255, 255, 0.45);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .theme-toggle:active {
+      transform: translateY(0);
+    }
+
+    .theme-toggle:focus-visible {
+      outline: 2px solid var(--accent-dark);
+      outline-offset: 4px;
+    }
+
+    /* Main Card */
+    .glass-card {
+      background: var(--glass-light);
+      border: 1px solid var(--glass-light-border);
+      border-radius: var(--radius);
+      padding: 48px;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: var(--shadow-lg);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Animated gradient background */
+    .glass-card::before {
+      content: "";
+      position: absolute;
+      top: -50%;
+      right: -50%;
+      width: 200%;
+      height: 200%;
+      background:
+        radial-gradient(
+          circle at 20% 50%,
+          rgba(13, 17, 23, 0.03),
+          transparent 50%
+        ),
+        radial-gradient(
+          circle at 80% 80%,
+          rgba(13, 17, 23, 0.02),
+          transparent 50%
+        );
+      pointer-events: none;
+      animation: gradientShift 15s ease infinite;
+    }
+
+    @keyframes gradientShift {
+      0%, 100% { transform: translate(0, 0); }
+      50% { transform: translate(20px, 20px); }
+    }
+
+    .glass-card > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    h1 {
+      font-size: 36px;
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
+      background: linear-gradient(
+        135deg,
+        var(--text-primary) 0%,
+        var(--text-secondary) 100%
+      );
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      font-size: 15px;
+      color: var(--text-tertiary);
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+
+    .content-block {
+      margin-bottom: 20px;
+    }
+
+    .content-block p {
+      font-size: 15px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      margin-bottom: 6px;
+    }
+
+    .email-highlight {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(13, 17, 23, 0.05);
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      margin: 2px 0;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    html[data-theme="dark"] .email-highlight {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    /* Action Buttons */
+    .actions {
+      margin-top: 32px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      appearance: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 14px 24px;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      text-decoration: none;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-primary {
+      background: var(--accent-dark);
+      color: var(--accent-text);
+      box-shadow: 0 8px 24px rgba(13, 17, 23, 0.25);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 14px 36px rgba(13, 17, 23, 0.35);
+    }
+
+    .btn-primary:active {
+      transform: translateY(-1px);
+    }
+
+    .btn-primary:focus-visible {
+      outline: 2px solid var(--accent-dark);
+      outline-offset: 3px;
+    }
+
+    .btn::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.15);
+      transition: left 0.4s ease;
+    }
+
+    .btn:hover::before {
+      left: 100%;
+    }
+
+    /* Divider */
+    .divider {
+      height: 1px;
+      background: linear-gradient(
+        to right,
+        transparent,
+        var(--glass-light-border),
+        transparent
+      );
+      margin: 28px 0;
+    }
+
+    /* Footer text */
+    .footer-text {
+      font-size: 13px;
+      color: var(--text-tertiary);
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    .footer-text a {
+      color: var(--accent-dark);
+      text-decoration: none;
+      font-weight: 700;
+      position: relative;
+    }
+
+    .footer-text a::after {
+      content: "";
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: var(--accent-dark);
+      transform: scaleX(0);
+      transform-origin: right;
+      transition: transform 0.3s ease;
+    }
+
+    .footer-text a:hover::after {
+      transform: scaleX(1);
+      transform-origin: left;
+    }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      .glass-card {
+        padding: 32px 24px;
+        border-radius: 16px;
+      }
+
+      h1 {
+        font-size: 28px;
+      }
+
+      .btn {
+        width: 100%;
+        padding: 12px 20px;
+      }
+
+      .theme-toggle {
+        padding: 7px 12px;
+        font-size: 11px;
+      }
+    }
+
+    /* Reduce motion */
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+  </style>
 </head>
+
 <body>
-    <div class="support-box">
-        <h1>TextCapture Support</h1>
-        <p>Need help with TextCapture?</p>
-        <p>Send us an email at: <strong>tanvir4talk@gmail.com</strong></p>
-        <p>We'll get back to you as soon as possible!</p>
-        <a href="mailto:tanvir4talk@gmail.com?subject=TextCapture Support">Send Email</a>
+  <div class="container">
+    <div class="header">
+      <div class="header-title">Support Center</div>
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle dark mode">
+        ☀️ / 🌙
+      </button>
     </div>
+
+    <div class="glass-card">
+      <h1>TextCapture</h1>
+      <p class="subtitle">We're here to help with any questions or issues you may have.</p>
+
+      <div class="content-block">
+        <p>Need help with TextCapture?</p>
+        <p>Send us an email:</p>
+        <div class="email-highlight">
+          📧 tanvir4talk@gmail.com
+        </div>
+      </div>
+
+      <p style="font-size: 14px; color: var(--text-tertiary); margin-top: 18px;">
+        We'll get back to you as soon as possible! Typically within 24 hours.
+      </p>
+
+      <div class="divider"></div>
+
+      <div class="actions">
+        <a class="btn btn-primary" href="mailto:tanvir4talk@gmail.com?subject=TextCapture Support">
+          📬 Send Email
+        </a>
+      </div>
+
+      <div class="divider"></div>
+
+      <p class="footer-text">
+        Having a great experience? <br />
+        We'd love to hear your feedback!
+      </p>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const root = document.documentElement;
+      const btn = document.getElementById("themeToggle");
+
+      const saved = localStorage.getItem("theme");
+      if (saved === "light" || saved === "dark") {
+        root.setAttribute("data-theme", saved);
+      }
+
+      function updateToggle() {
+        const theme = root.getAttribute("data-theme");
+        if (theme === "dark") {
+          btn.textContent = "☀️ Light";
+        } else if (theme === "light") {
+          btn.textContent = "🌙 Dark";
+        } else {
+          btn.textContent = "☀️ / 🌙";
+        }
+      }
+
+      updateToggle();
+
+      btn.addEventListener("click", function () {
+        const current = root.getAttribute("data-theme");
+        const next = current === "dark" ? "light" : "dark";
+        root.setAttribute("data-theme", next);
+        localStorage.setItem("theme", next);
+        updateToggle();
+      });
+    })();
+  </script>
 </body>
 </html>
